@@ -3,6 +3,8 @@
 #include "Header.h"
 using namespace std;
 
+
+
 int state_next_s[Count][HEIGHT][WIDTH] ; //копия для итераций
 int state_3[Count][HEIGHT][WIDTH];
 int S[PS_Hight][PS_Width];
