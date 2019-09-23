@@ -1,0 +1,7 @@
+set output 'diagram_right.png'
+set terminal png size 1280, 600
+set xlabel "Iterations"
+set ylabel "Difference"
+set title "Speed to iteration ratio for right wave"
+set grid
+plot [0:300][:] 'Diagram.txt' u 1:3 w lines
