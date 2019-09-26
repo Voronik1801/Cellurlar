@@ -26,3 +26,6 @@ void plot();
 #define PS_Width 64
 #define PS_Hight 64
 #define Size 64
+
+template <typename Type1>
+void INIT_RULE_S(Type1 count_s[Size], Type1 Rule_S[PS_Hight][PS_Width]);

@@ -3,8 +3,6 @@
 #include "Header.h"
 using namespace std;
 
-
-
 int state_next_s[Count][HEIGHT][WIDTH] ; //копия для итераций
 int state_3[Count][HEIGHT][WIDTH];
 int S[PS_Hight][PS_Width];
@@ -41,81 +39,119 @@ void FILL() //заполнение массива начальных состояний, средними массами
    }
 }
 
-void INIT_State(double state[HEIGHT][WIDTH]) //инициализация средних масс
+template <typename Ty , typename Ty2>
+void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
 {
-   double k;
-   int i = 0, j = 0;
+	double k;
+	int i = 0, j = 0;
 
-   fscanf(file, "%lf", &k);
-   while (k != EOF && i != HEIGHT) 
-   {
-      state[i][j++] = k;
-      fscanf(file, "%lf", &k);
-      if (j == WIDTH)
-      {
-         j = 0;
-         i++;
-      }
-   }
+	fscanf(file, "%lf", &k);
+	while (k != EOF && i != PS_Hight)
+	{
+		Rule_S[i][j++] = k;
+		fscanf(file, "%lf", &k);
+		if (j == count_s[i])
+		{
+			j = 0;
+			i++;
+		}
+	}
 
 }
-
-void INIT_Begin_State(char begin[HEIGHT][WIDTH]) //инициализация начального состояния
+template <typename Type>
+void INIT(Type state_s[HEIGHT][WIDTH])
 {
-   char k;
-   int i = 0, j = 0;
+	double k;
+	int i = 0, j = 0;
 
-   fscanf(file, "%c ", &k);
-   while (k != EOF && i != HEIGHT) 
-   {
-      begin[i][j++] = k;
-      fscanf(file, "%c ", &k);
-      if (j == WIDTH)
-      {
-         j = 0;
-         i++;
-      }
-   }
-
+	fscanf(file, "%lf", &k);
+	while (k != EOF && i != HEIGHT)
+	{
+		state_s[i][j++] = k;
+		fscanf(file, "%lf", &k);
+		if (j == WIDTH)
+		{
+			j = 0;
+			i++;
+		}
+	}
 }
 
-void INIT_RULE(int count_s[Size], double Rule[PS_Hight][PS_Width]) //инициализация правил
-{
-   double k;
-   int i = 0, j = 0;
+//void INIT_RULE(int count_s[Size], double Rule[PS_Hight][PS_Width]) //инициализация правил
+//{
+//   double k;
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%lf", &k);
+//   while (k != EOF && i != PS_Hight) 
+//   {
+//      Rule[i][j++] = k;
+//      fscanf(file, "%lf", &k);
+//      if (j == count_s[i])
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
+//
+//void INIT_S(int count_s[Size], int S[PS_Hight][PS_Width]) //инициализация массива исходов для правил
+//{
+//   int k;
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%i", &k);
+//   while (k != EOF && i != PS_Hight) 
+//   {
+//      S[i][j++] = k;
+//      fscanf(file, "%i", &k);
+//      if (j == count_s[i])
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
+//void INIT_State(double state[HEIGHT][WIDTH]) //инициализация средних масс
+//{
+//   double k;
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%lf", &k);
+//   while (k != EOF && i != HEIGHT) 
+//   {
+//      state[i][j++] = k;
+//      fscanf(file, "%lf", &k);
+//      if (j == WIDTH)
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
+//
+//void INIT_Begin_State(char begin[HEIGHT][WIDTH]) //инициализация начального состояния
+//{
+//   char k;
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%c ", &k);
+//   while (k != EOF && i != HEIGHT) 
+//   {
+//      begin[i][j++] = k;
+//      fscanf(file, "%c ", &k);
+//      if (j == WIDTH)
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
 
-   fscanf(file, "%lf", &k);
-   while (k != EOF && i != PS_Hight) 
-   {
-      Rule[i][j++] = k;
-      fscanf(file, "%lf", &k);
-      if (j == count_s[i])
-      {
-         j = 0;
-         i++;
-      }
-   }
-
-}
-
-void INIT_S(int count_s[Size]) //инициализация массива исходов для правил
-{
-   int k;
-   int i = 0, j = 0;
-
-   fscanf(file, "%i", &k);
-   while (k != EOF && i != PS_Hight) 
-   {
-      S[i][j++] = k;
-      fscanf(file, "%i", &k);
-      if (j == count_s[i])
-      {
-         j = 0;
-         i++;
-      }
-   }
-
-}
 
 void INIT_Count(int count[Size]) //инициализация массива для правил
 {
@@ -248,11 +284,11 @@ void iteration(int state[][WIDTH], int state_next_s[][WIDTH])
 void begin()
 {
    fopen_s(&file, "Geometry.txt", "r"); //геометрия области, 0-частица, 1- зеркало, 2 - другая среда
-   INIT_Begin_State(begin_state);       //чтение из файла геометрии
+   INIT(begin_state);       //чтение из файла геометрии
    fclose(file);
 
    fopen_s(&file, "Density.txt", "r");  // начальное состояние области
-   INIT_State(fl);                      //чтение из файла геометрии
+   INIT(fl);                      //чтение из файла геометрии
    fclose(file);
 
 }
@@ -264,19 +300,19 @@ void Rule(int count[Size], double P_0_1[PS_Hight][PS_Width], double P_0_5[PS_Hig
    fclose(file);
 
    fopen_s(&file, "matrixes0.1.txt", "r"); //инициализация првила. вероятность 0.1
-   INIT_RULE(count, P_0_1);                //чтение из файла вероятности
+   INIT_RULE_S(count, P_0_1);                //чтение из файла вероятности
    fclose(file);
 
    fopen_s(&file, "matrixes0.5.txt", "r"); //инициализация првила. вероятность 0.5
-   INIT_RULE(count, P_0_5);                //чтение из файла вероятности
+   INIT_RULE_S(count, P_0_5);                //чтение из файла вероятности
    fclose(file);
 
    fopen_s(&file, "matrixes0.9.txt", "r"); //инициализация првила. вероятность 0.9
-   INIT_RULE(count, P_0_9);                //чтение из файла вероятности
+   INIT_RULE_S(count, P_0_9);                //чтение из файла вероятности
    fclose(file);
 
    fopen_s(&file, "Rule2.txt", "r");       //состояни для правил
-   INIT_S(count);                          //чтение из файла состояний
+   INIT_RULE_S(count, S);                          //чтение из файла состояний
    fclose(file);
 
 }
@@ -307,7 +343,7 @@ int main()
       {
          auto start1 = std::chrono::high_resolution_clock::now();
 
-         picture(state_3, img, j);  //предача данных для отрисовки картинок
+        // picture(state_3, img, j);  //предача данных для отрисовки картинок
 
          auto end1 = std::chrono::high_resolution_clock::now();
          std::chrono::duration<double> diff1 = end1 - start1;
@@ -315,7 +351,7 @@ int main()
       }
    }
 
-   plot();       //построение графиков и bmp-изображений
+   //plot();       //построение графиков и bmp-изображений
 
    system("pause");
    return 0;
