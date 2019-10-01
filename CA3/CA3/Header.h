@@ -5,15 +5,14 @@
 #include <fstream>
 #pragma warning(disable : 4996)
 
-int const WIDTH = 1000, HEIGHT = 500; //размер клеточного поля
+int const WIDTH = 1000, HEIGHT = 500; 
 
-#define rad 2                         // осреднение по окрестности
-#define linerad 3                     // осреднение по столбцу
-#define Count 16                      // колличество копий
-#define Iter 300                     // колличество итераций
-#define T 4                           // количество потоков
-
-int picture(int [][HEIGHT][WIDTH], Bmp &, int);
+#define rad 2                         
+#define linerad 3                    
+#define Count 16                      
+#define Iter 300                    
+#define T 4                          
+int picture(int[][HEIGHT][WIDTH], Bmp&, int);
 void plot();
 
 #define bitUP  1
@@ -25,7 +24,4 @@ void plot();
 
 #define PS_Width 64
 #define PS_Hight 64
-#define Size 64
-
-template <typename Type1>
-void INIT_RULE_S(Type1 count_s[Size], Type1 Rule_S[PS_Hight][PS_Width]);
+#define Size 64 

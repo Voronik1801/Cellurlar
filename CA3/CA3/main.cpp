@@ -1,9 +1,9 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <conio.h>
 #include "Header.h"
 using namespace std;
 
-int state_next_s[Count][HEIGHT][WIDTH] ; //копия для итераций
+int state_next_s[Count][HEIGHT][WIDTH]; //ГЄГ®ГЇГЁГї Г¤Г«Гї ГЁГІГҐГ°Г Г¶ГЁГ©
 int state_3[Count][HEIGHT][WIDTH];
 int S[PS_Hight][PS_Width];
 double P_0_1[PS_Hight][PS_Width];
@@ -12,35 +12,72 @@ double P_0_9[PS_Hight][PS_Width];
 int count_s[Size];
 char begin_state[HEIGHT][WIDTH];
 double fl[HEIGHT][WIDTH];
-FILE *file;
+FILE* file;
 
-void FILL() //заполнение массива начальных состояний, средними массами
-{  
-   double r;
-   int j;
-   omp_set_num_threads(T);
-   for (int k = 0; k < Count; k++)
-   {
+void FILL() //Г§Г ГЇГ®Г«Г­ГҐГ­ГЁГҐ Г¬Г Г±Г±ГЁГўГ  Г­Г Г·Г Г«ГјГ­Г»Гµ Г±Г®Г±ГІГ®ГїГ­ГЁГ©, Г±Г°ГҐГ¤Г­ГЁГ¬ГЁ Г¬Г Г±Г±Г Г¬ГЁ
+{
+	double r;
+	int j;
+	omp_set_num_threads(T);
+	for (int k = 0; k < Count; k++)
+	{
 #pragma omp parallel for private (r, j)
-      for (int i = 0; i < HEIGHT; i++)
-      {
-         for (j = 0; j < WIDTH; j++)
-         {
+		for (int i = 0; i < HEIGHT; i++)
+		{
+			for (j = 0; j < WIDTH; j++)
+			{
 
-            r = fl[i][j] / 10;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitUP;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitRIGHT;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitDOWN;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitLEFT;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE2;
-         }
-      }
-   }
+				r = fl[i][j] / 10;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitUP;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitRIGHT;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitDOWN;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitLEFT;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE;
+				if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE2;
+			}
+		}
+	}
 }
 
-template <typename Ty , typename Ty2>
-void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
+void INIT_State(double state[HEIGHT][WIDTH]) //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г±Г°ГҐГ¤Г­ГЁГµ Г¬Г Г±Г±
+{
+	double k;
+	int i = 0, j = 0;
+
+	fscanf(file, "%lf", &k);
+	while (k != EOF && i != HEIGHT)
+	{
+		state[i][j++] = k;
+		fscanf(file, "%lf", &k);
+		if (j == WIDTH)
+		{
+			j = 0;
+			i++;
+		}
+	}
+
+}
+
+void INIT_Begin_State(char begin[HEIGHT][WIDTH]) //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г­Г Г·Г Г«ГјГ­Г®ГЈГ® Г±Г®Г±ГІГ®ГїГ­ГЁГї
+{
+	char k;
+	int i = 0, j = 0;
+
+	fscanf(file, "%c ", &k);
+	while (k != EOF && i != HEIGHT)
+	{
+		begin[i][j++] = k;
+		fscanf(file, "%c ", &k);
+		if (j == WIDTH)
+		{
+			j = 0;
+			i++;
+		}
+	}
+
+}
+
+void INIT_RULE(int count_s[Size], double Rule[PS_Hight][PS_Width]) //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ°Г ГўГЁГ«
 {
 	double k;
 	int i = 0, j = 0;
@@ -48,7 +85,7 @@ void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
 	fscanf(file, "%lf", &k);
 	while (k != EOF && i != PS_Hight)
 	{
-		Rule_S[i][j++] = k;
+		Rule[i][j++] = k;
 		fscanf(file, "%lf", &k);
 		if (j == count_s[i])
 		{
@@ -58,301 +95,226 @@ void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
 	}
 
 }
-template <typename Type>
-void INIT(Type state_s[HEIGHT][WIDTH])
+
+void INIT_S(int count_s[Size]) //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г¬Г Г±Г±ГЁГўГ  ГЁГ±ГµГ®Г¤Г®Гў Г¤Г«Гї ГЇГ°Г ГўГЁГ«
 {
-	double k;
+	int k;
 	int i = 0, j = 0;
 
-	fscanf(file, "%lf", &k);
-	while (k != EOF && i != HEIGHT)
+	fscanf(file, "%i", &k);
+	while (k != EOF && i != PS_Hight)
 	{
-		state_s[i][j++] = k;
-		fscanf(file, "%lf", &k);
-		if (j == WIDTH)
+		S[i][j++] = k;
+		fscanf(file, "%i", &k);
+		if (j == count_s[i])
 		{
 			j = 0;
 			i++;
 		}
 	}
+
 }
 
-//void INIT_RULE(int count_s[Size], double Rule[PS_Hight][PS_Width]) //инициализация правил
-//{
-//   double k;
-//   int i = 0, j = 0;
-//
-//   fscanf(file, "%lf", &k);
-//   while (k != EOF && i != PS_Hight) 
-//   {
-//      Rule[i][j++] = k;
-//      fscanf(file, "%lf", &k);
-//      if (j == count_s[i])
-//      {
-//         j = 0;
-//         i++;
-//      }
-//   }
-//
-//}
-//
-//void INIT_S(int count_s[Size], int S[PS_Hight][PS_Width]) //инициализация массива исходов для правил
-//{
-//   int k;
-//   int i = 0, j = 0;
-//
-//   fscanf(file, "%i", &k);
-//   while (k != EOF && i != PS_Hight) 
-//   {
-//      S[i][j++] = k;
-//      fscanf(file, "%i", &k);
-//      if (j == count_s[i])
-//      {
-//         j = 0;
-//         i++;
-//      }
-//   }
-//
-//}
-//void INIT_State(double state[HEIGHT][WIDTH]) //инициализация средних масс
-//{
-//   double k;
-//   int i = 0, j = 0;
-//
-//   fscanf(file, "%lf", &k);
-//   while (k != EOF && i != HEIGHT) 
-//   {
-//      state[i][j++] = k;
-//      fscanf(file, "%lf", &k);
-//      if (j == WIDTH)
-//      {
-//         j = 0;
-//         i++;
-//      }
-//   }
-//
-//}
-//
-//void INIT_Begin_State(char begin[HEIGHT][WIDTH]) //инициализация начального состояния
-//{
-//   char k;
-//   int i = 0, j = 0;
-//
-//   fscanf(file, "%c ", &k);
-//   while (k != EOF && i != HEIGHT) 
-//   {
-//      begin[i][j++] = k;
-//      fscanf(file, "%c ", &k);
-//      if (j == WIDTH)
-//      {
-//         j = 0;
-//         i++;
-//      }
-//   }
-//
-//}
-
-
-void INIT_Count(int count[Size]) //инициализация массива для правил
+void INIT_Count(int count[Size]) //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г¬Г Г±Г±ГЁГўГ  Г¤Г«Гї ГЇГ°Г ГўГЁГ«
 {
-   int k;
-   int i = 0;
+	int k;
+	int i = 0;
 
-   fscanf(file, "%i", &k);
-   while (k != EOF && i != Size) 
-   {
-      count_s[i] = k;
-      fscanf(file, "%i", &k);
-      i++;
-   }
-   
+	fscanf(file, "%i", &k);
+	while (k != EOF && i != Size)
+	{
+		count_s[i] = k;
+		fscanf(file, "%i", &k);
+		i++;
+	}
+
 }
 
-int prob(double P[PS_Hight][PS_Width], int k) //определение значения подходящей вероятности
+int prob(double P[PS_Hight][PS_Width], int k) //Г®ГЇГ°ГҐГ¤ГҐГ«ГҐГ­ГЁГҐ Г§Г­Г Г·ГҐГ­ГЁГї ГЇГ®Г¤ГµГ®Г¤ГїГ№ГҐГ© ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГЁ
 {
-   double l = (double)(rand() % 100 + 1) / 101;
-   int i = 0;
-   while (i < PS_Width && l > P[k][i])
-   {
-      l -= P[k][i];
-      i++;
-   }
-   if (i == PS_Width)
-      return 0;
-   else
-      return i;
+	double l = (double)(rand() % 100 + 1) / 101;
+	int i = 0;
+	while (i < PS_Width && l > P[k][i])
+	{
+		l -= P[k][i];
+		i++;
+	}
+	if (i == PS_Width)
+		return 0;
+	else
+		return i;
 }
 
 void colide(int state[][WIDTH])
 {
-   int l, save, j;
-   omp_set_num_threads(T);
-   #pragma omp parallel for private (l, save, j)
-   for (int i = 0; i < HEIGHT; i++)
-   {
-      for (j = 0; j < WIDTH; j++)
-      {
-         if (begin_state[i][j] == '1') 
-         {    
-            if (!(((state[i][j] & bitUP) && (state[i][j] & bitDOWN))))
-            {
-               if (state[i][j] & bitUP)
-               {
-                  state[i][j] -= bitUP;
-                  state[i][j] |= bitDOWN;
-               }
-               else
-                  if (state[i][j] & bitDOWN)
-                  {
-                     state[i][j] -= bitDOWN;
-                     state[i][j] |= bitUP;
-                  }
-            }
-            if (!(((state[i][j] & bitLEFT) && (state[i][j] & bitRIGHT))))
-            {
-               if (state[i][j] & bitRIGHT)
-               {
-                  state[i][j] -= bitRIGHT;
-                  state[i][j] |= bitLEFT;
-               }
-               else
-                  if (state[i][j] & bitLEFT)
-                  {
-                     state[i][j] -= bitLEFT;
-                     state[i][j] |= bitRIGHT;
-                  }
-            }
-            continue;
-         }
+	int l, save, j;
+	omp_set_num_threads(T);
+#pragma omp parallel for private (l, save, j)
+	for (int i = 0; i < HEIGHT; i++)
+	{
+		for (j = 0; j < WIDTH; j++)
+		{
+			if (begin_state[i][j] == '1')
+			{
+				if (!(((state[i][j] & bitUP) && (state[i][j] & bitDOWN))))
+				{
+					if (state[i][j] & bitUP)
+					{
+						state[i][j] -= bitUP;
+						state[i][j] |= bitDOWN;
+					}
+					else
+						if (state[i][j] & bitDOWN)
+						{
+							state[i][j] -= bitDOWN;
+							state[i][j] |= bitUP;
+						}
+				}
+				if (!(((state[i][j] & bitLEFT) && (state[i][j] & bitRIGHT))))
+				{
+					if (state[i][j] & bitRIGHT)
+					{
+						state[i][j] -= bitRIGHT;
+						state[i][j] |= bitLEFT;
+					}
+					else
+						if (state[i][j] & bitLEFT)
+						{
+							state[i][j] -= bitLEFT;
+							state[i][j] |= bitRIGHT;
+						}
+				}
+				continue;
+			}
 
-         l = state[i][j];
+			l = state[i][j];
 
-         if (count_s[l] != 1)
-         {
-            if (begin_state[i][j] == '0')
-            {
-               save = prob(P_0_1, l);
-               state[i][j] = S[l][save];
-            }
-            else
-               if (begin_state[i][j] == '2')
-               {
-                  save = prob(P_0_5, l);
-                  state[i][j] = S[l][save];
-               }
-               else
-                  if (begin_state[i][j] =='3')
-                  {
-                     save = prob(P_0_9, l);
-                     state[i][j] = S[l][save];
-                  }
-         }
-      }
-   }
+			if (count_s[l] != 1)
+			{
+				if (begin_state[i][j] == '0')
+				{
+					save = prob(P_0_1, l);
+					state[i][j] = S[l][save];
+				}
+				else
+					if (begin_state[i][j] == '2')
+					{
+						save = prob(P_0_5, l);
+						state[i][j] = S[l][save];
+					}
+					else
+						if (begin_state[i][j] == '3')
+						{
+							save = prob(P_0_9, l);
+							state[i][j] = S[l][save];
+						}
+			}
+		}
+	}
 }
 
-void move(int state[][WIDTH], int state_next_s[][WIDTH]) 
+void move(int state[][WIDTH], int state_next_s[][WIDTH])
 {
-   int j;
-   omp_set_num_threads(T);
-   #pragma omp parallel for private (j)
-   for (int i = 0; i < HEIGHT; i++) 
-      for (j = 0; j < WIDTH; j++) 
-         state_next_s[i][j] = (state[i][j] & bitSTABLE) |
-            (state[i][(j + 1) % WIDTH] & bitLEFT) |
-            (state[i][(j - 1 + WIDTH) % WIDTH] & bitRIGHT) |
-            (state[(i + 1) % HEIGHT][j] & bitDOWN) |
-            (state[(i - 1 + HEIGHT) % HEIGHT][j] & bitUP) |
-            (state[i][j] & bitSTABLE2);
-   int C;
-   #pragma omp parallel for private(C, j)
-   for (int i = 0; i < HEIGHT; i++) 
-      for (j = 0; j < WIDTH; j++) 
-      {
-         C = state[i][j];
-         state[i][j] = state_next_s[i][j];
-         state_next_s[i][j]=C;
-      }
+	int j;
+	omp_set_num_threads(T);
+#pragma omp parallel for private (j)
+	for (int i = 0; i < HEIGHT; i++)
+		for (j = 0; j < WIDTH; j++)
+			state_next_s[i][j] = (state[i][j] & bitSTABLE) |
+			(state[i][(j + 1) % WIDTH] & bitLEFT) |
+			(state[i][(j - 1 + WIDTH) % WIDTH] & bitRIGHT) |
+			(state[(i + 1) % HEIGHT][j] & bitDOWN) |
+			(state[(i - 1 + HEIGHT) % HEIGHT][j] & bitUP) |
+			(state[i][j] & bitSTABLE2);
+	int C;
+#pragma omp parallel for private(C, j)
+	for (int i = 0; i < HEIGHT; i++)
+		for (j = 0; j < WIDTH; j++)
+		{
+			C = state[i][j];
+			state[i][j] = state_next_s[i][j];
+			state_next_s[i][j] = C;
+		}
 }
 
 void iteration(int state[][WIDTH], int state_next_s[][WIDTH])
 {
-   colide(state);             //столкновение частиц
-   move(state, state_next_s); //движение частиц
+	colide(state);             //Г±ГІГ®Г«ГЄГ­Г®ГўГҐГ­ГЁГҐ Г·Г Г±ГІГЁГ¶
+	move(state, state_next_s); //Г¤ГўГЁГ¦ГҐГ­ГЁГҐ Г·Г Г±ГІГЁГ¶
 }
 
 void begin()
 {
-   fopen_s(&file, "Geometry.txt", "r"); //геометрия области, 0-частица, 1- зеркало, 2 - другая среда
-   INIT(begin_state);       //чтение из файла геометрии
-   fclose(file);
+	fopen_s(&file, "Geometry.txt", "r"); //ГЈГҐГ®Г¬ГҐГІГ°ГЁГї Г®ГЎГ«Г Г±ГІГЁ, 0-Г·Г Г±ГІГЁГ¶Г , 1- Г§ГҐГ°ГЄГ Г«Г®, 2 - Г¤Г°ГіГЈГ Гї Г±Г°ГҐГ¤Г 
+	INIT_Begin_State(begin_state);       //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  ГЈГҐГ®Г¬ГҐГІГ°ГЁГЁ
+	fclose(file);
 
-   fopen_s(&file, "Density.txt", "r");  // начальное состояние области
-   INIT(fl);                      //чтение из файла геометрии
-   fclose(file);
+	fopen_s(&file, "Density.txt", "r");  // Г­Г Г·Г Г«ГјГ­Г®ГҐ Г±Г®Г±ГІГ®ГїГ­ГЁГҐ Г®ГЎГ«Г Г±ГІГЁ
+	INIT_State(fl);                      //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  ГЈГҐГ®Г¬ГҐГІГ°ГЁГЁ
+	fclose(file);
 
 }
 
-void Rule(int count[Size], double P_0_1[PS_Hight][PS_Width], double P_0_5[PS_Hight][PS_Width], double P_0_9[PS_Hight][PS_Width], int S[PS_Hight][PS_Width]) 
+void Rule(int count[Size], double P_0_1[PS_Hight][PS_Width], double P_0_5[PS_Hight][PS_Width], double P_0_9[PS_Hight][PS_Width], int S[PS_Hight][PS_Width])
 {
-   fopen_s(&file, "Rule3.txt", "r"); //массив с колличеством исходов их частицы при столконовении
-   INIT_Count(count);                //чтение из файла массива
-   fclose(file);
+	fopen_s(&file, "Rule3.txt", "r"); //Г¬Г Г±Г±ГЁГў Г± ГЄГ®Г«Г«ГЁГ·ГҐГ±ГІГўГ®Г¬ ГЁГ±ГµГ®Г¤Г®Гў ГЁГµ Г·Г Г±ГІГЁГ¶Г» ГЇГ°ГЁ Г±ГІГ®Г«ГЄГ®Г­Г®ГўГҐГ­ГЁГЁ
+	INIT_Count(count);                //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  Г¬Г Г±Г±ГЁГўГ 
+	fclose(file);
 
-   fopen_s(&file, "matrixes0.1.txt", "r"); //инициализация првила. вероятность 0.1
-   INIT_RULE_S(count, P_0_1);                //чтение из файла вероятности
-   fclose(file);
+	fopen_s(&file, "matrixes0.1.txt", "r"); //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ°ГўГЁГ«Г . ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГј 0.1
+	INIT_RULE(count, P_0_1);                //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГЁ
+	fclose(file);
 
-   fopen_s(&file, "matrixes0.5.txt", "r"); //инициализация првила. вероятность 0.5
-   INIT_RULE_S(count, P_0_5);                //чтение из файла вероятности
-   fclose(file);
+	fopen_s(&file, "matrixes0.5.txt", "r"); //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ°ГўГЁГ«Г . ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГј 0.5
+	INIT_RULE(count, P_0_5);                //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГЁ
+	fclose(file);
 
-   fopen_s(&file, "matrixes0.9.txt", "r"); //инициализация првила. вероятность 0.9
-   INIT_RULE_S(count, P_0_9);                //чтение из файла вероятности
-   fclose(file);
+	fopen_s(&file, "matrixes0.9.txt", "r"); //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ°ГўГЁГ«Г . ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГј 0.9
+	INIT_RULE(count, P_0_9);                //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  ГўГҐГ°Г®ГїГІГ­Г®Г±ГІГЁ
+	fclose(file);
 
-   fopen_s(&file, "Rule2.txt", "r");       //состояни для правил
-   INIT_RULE_S(count, S);                          //чтение из файла состояний
-   fclose(file);
+	fopen_s(&file, "Rule2.txt", "r");       //Г±Г®Г±ГІГ®ГїГ­ГЁ Г¤Г«Гї ГЇГ°Г ГўГЁГ«
+	INIT_S(count);                          //Г·ГІГҐГ­ГЁГҐ ГЁГ§ ГґГ Г©Г«Г  Г±Г®Г±ГІГ®ГїГ­ГЁГ©
+	fclose(file);
 
 }
 
 int main()
 {
-   Bmp img(WIDTH, HEIGHT);
+	Bmp img(WIDTH, HEIGHT);
 
-   begin(); //инициализация начальных состояний
+	begin(); //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї Г­Г Г·Г Г«ГјГ­Г»Гµ Г±Г®Г±ГІГ®ГїГ­ГЁГ©
 
-   FILL(); // заполнение частицами массива начальными состояниями
-   
-   Rule(count_s, P_0_1, P_0_5, P_0_9, S); //инициализация правил 
+	FILL(); // Г§Г ГЇГ®Г«Г­ГҐГ­ГЁГҐ Г·Г Г±ГІГЁГ¶Г Г¬ГЁ Г¬Г Г±Г±ГЁГўГ  Г­Г Г·Г Г«ГјГ­Г»Г¬ГЁ Г±Г®Г±ГІГ®ГїГ­ГЁГїГ¬ГЁ
 
-   omp_set_num_threads(T);
-   for (int j = 0; j <= Iter; j++)
-   {
-      auto start = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < Count; i++)
-      {
-         iteration(state_3[i], state_next_s[i]);  //итерация : сдвиг, столкновение
-      }
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> diff = end - start;
-      cout << "Time iteration " << diff.count() << endl;
+	Rule(count_s, P_0_1, P_0_5, P_0_9, S); //ГЁГ­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї ГЇГ°Г ГўГЁГ« 
 
-      if (j % 10 == 0)
-      {
-         auto start1 = std::chrono::high_resolution_clock::now();
+	omp_set_num_threads(T);
+	for (int j = 0; j <= Iter; j++)
+	{
+		auto start = std::chrono::high_resolution_clock::now();
+		for (int i = 0; i < Count; i++)
+		{
+			iteration(state_3[i], state_next_s[i]);  //ГЁГІГҐГ°Г Г¶ГЁГї : Г±Г¤ГўГЁГЈ, Г±ГІГ®Г«ГЄГ­Г®ГўГҐГ­ГЁГҐ
+		}
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		cout << "Time iteration " << diff.count() << endl;
 
-        // picture(state_3, img, j);  //предача данных для отрисовки картинок
+		if (j % 10 == 0)
+		{
+			auto start1 = std::chrono::high_resolution_clock::now();
 
-         auto end1 = std::chrono::high_resolution_clock::now();
-         std::chrono::duration<double> diff1 = end1 - start1;
-         cout << "Time average " << diff1.count() << endl;
-      }
-   }
+			picture(state_3, img, j);  //ГЇГ°ГҐГ¤Г Г·Г  Г¤Г Г­Г­Г»Гµ Г¤Г«Гї Г®ГІГ°ГЁГ±Г®ГўГЄГЁ ГЄГ Г°ГІГЁГ­Г®ГЄ
 
-   //plot();       //построение графиков и bmp-изображений
+			auto end1 = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> diff1 = end1 - start1;
+			cout << "Time average " << diff1.count() << endl;
+		}
+	}
 
-   system("pause");
-   return 0;
+	plot();       //ГЇГ®Г±ГІГ°Г®ГҐГ­ГЁГҐ ГЈГ°Г ГґГЁГЄГ®Гў ГЁ bmp-ГЁГ§Г®ГЎГ°Г Г¦ГҐГ­ГЁГ©
+
+	system("pause");
+	return 0;
 }
