@@ -10,9 +10,12 @@ int r[HEIGHT][WIDTH];          // ч. покоя
 double dens_M[HEIGHT][WIDTH];  // сред. масса движ. частиц
 double dens_R[HEIGHT][WIDTH];  // сред. масса ч. покоя
 double columns[WIDTH];         // сред. значение по столбцу
-extern char begin_state[HEIGHT][WIDTH];
+char begin_state[HEIGHT][WIDTH];
+extern char** beg_state;
 double diagram[2][(int)(Iter/10.0) + 1];
 double diag[(int)(Iter / 10.0) + 1];
+extern int h, w;
+Bmp image(WIDTH, HEIGHT);
 
 double NumRound(double d) // округление до десятых
 {
@@ -189,7 +192,7 @@ int gett(int n)
    return k + 2 * t;
 }
 
-int picture(int a[][HEIGHT][WIDTH], Bmp &image, int iter)
+int picture(int a[][HEIGHT][WIDTH], int iter)
 {
    double aver_m[HEIGHT][WIDTH] = {}; 
    double aver_r[HEIGHT][WIDTH] = {};

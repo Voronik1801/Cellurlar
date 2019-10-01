@@ -1,21 +1,41 @@
 #include <iostream>
 #include <conio.h>
 #include "Header.h"
+#include <fstream>
 using namespace std;
 
-int state_next_s[Count][HEIGHT][WIDTH] ; //копия для итераций
-int state_3[Count][HEIGHT][WIDTH];
+//int state_next_s[Count][HEIGHT][WIDTH] ; //копия для итераций
+//int state_3[Count][HEIGHT][WIDTH];
 int S[PS_Hight][PS_Width];
 double P_0_1[PS_Hight][PS_Width];
 double P_0_5[PS_Hight][PS_Width];
 double P_0_9[PS_Hight][PS_Width];
 int count_s[Size];
-char begin_state[HEIGHT][WIDTH];
-double fl[HEIGHT][WIDTH];
+//char begin_state[HEIGHT][WIDTH];
+//double fl[HEIGHT][WIDTH];
+char** beg_state;
+float** den_state;
+int*** state_31;
+int*** state_n_3;
+int h, w;
 FILE *file;
+fstream f;
 
 void FILL() //заполнение массива начальных состояний, средними массами
 {  
+   state_n_3 = new int**[Count];
+   state_31 = new int**[Count];
+   for (int k = 0; k < Count; k++)
+   {
+      state_n_3[k] = new int* [h] {0};
+      state_31[k] = new int* [h] {0};
+      for (int i = 0; i < h; i++)
+      {
+         state_n_3[k][i] = new int[w] {0};
+         state_31[k][i] = new int[w] {0};
+      }
+   }
+  
    double r;
    int j;
    omp_set_num_threads(T);
@@ -26,14 +46,14 @@ void FILL() //заполнение массива начальных состояний, средними массами
       {
          for (j = 0; j < WIDTH; j++)
          {
-
-            r = fl[i][j] / 10;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitUP;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitRIGHT;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitDOWN;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitLEFT;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE;
-            if ((double)(rand() % 100 + 1) / 101 < r) state_3[k][i][j] |= bitSTABLE2;
+            // added parentheses ((d)(r)+1)
+            r = den_state[i][j] / 10;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitUP;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitRIGHT;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitDOWN;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitLEFT;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitSTABLE;
+            if (((double)(rand() % 100) + 1) / 101 < r) state_31[k][i][j] |= bitSTABLE2;
          }
       }
    }
@@ -115,16 +135,16 @@ void FILL() //заполнение массива начальных состояний, средними массами
 //
 //}
 
+
 void INIT_Count(int count[Size]) //инициализация массива для правил
 {
    int k;
    int i = 0;
-
-   fscanf(file, "%i", &k);
+   f >> k;
    while (k != EOF && i != Size) 
    {
       count_s[i] = k;
-      fscanf(file, "%i", &k);
+      f >> k;
       i++;
    }
    
@@ -132,7 +152,7 @@ void INIT_Count(int count[Size]) //инициализация массива для правил
 
 int prob(double P[PS_Hight][PS_Width], int k) //определение значения подходящей вероятности
 {
-   double l = (double)(rand() % 100 + 1) / 101;
+   double l = ((double)(rand() % 100) + 1) / 101;
    int i = 0;
    while (i < PS_Width && l > P[k][i])
    {
@@ -150,12 +170,11 @@ void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
 {
 	double k;
 	int i = 0, j = 0;
-
-	fscanf(file, "%lf", &k);
+   f >> k;
 	while (k != EOF && i != PS_Hight)
 	{
 		Rule_S[i][j++] = k;
-		fscanf(file, "%lf", &k);
+      f >> k;
 		if (j == count_s[i])
 		{
 			j = 0;
@@ -164,26 +183,69 @@ void INIT_RULE_S(Ty count_s[Size], Ty2 Rule_S[PS_Hight][PS_Width])
 	}
 
 }
-template <typename Type>
-void INIT(Type state_s[HEIGHT][WIDTH])
-{
-	double k;
-	int i = 0, j = 0;
 
-	fscanf(file, "%lf", &k);
-	while (k != EOF && i != HEIGHT)
-	{
-		state_s[i][j++] = k;
-		fscanf(file, "%lf", &k);
-		if (j == WIDTH)
-		{
-			j = 0;
-			i++;
-		}
-	}
-}
+//void INIT(double state[HEIGHT][WIDTH]) // состояние пространства
+//{
+//   int h, w;
+//   fscanf(file, "%i %i", &h, &w);
+//   try
+//   {
+//      bb_state = new char* [h];
+//      for (int i = 0; i < h; i++)
+//         bb_state[i] = new char[w];
+//   }
+//   catch (const std::exception&)
+//   {
+//      cout << "Lack of memory" << endl;
+//   }
+//   double k;
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%lf", &k);
+//   while (k != EOF && i != HEIGHT)
+//   {
+//      state[i][j++] = k;
+//      fscanf(file, "%lf", &k);
+//      if (j == WIDTH)
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
+//void INIT_B() // инициализация геометрии
+//{
+//   char k;
+//   int h, w;
+//   fscanf(file, "%i %i", &h, &w);
+//   try
+//   {
+//      bb_state = new char* [h];
+//      for (int i = 0; i < h; i++)
+//         bb_state[i] = new char[w];
+//   }
+//   catch (const std::exception&)
+//   {
+//      cout << "Lack of memory" << endl;
+//   }
+//   int i = 0, j = 0;
+//
+//   fscanf(file, "%c ", &k);
+//   while (k != EOF && i != HEIGHT)
+//   {
+//      bb_state[i][j++] = k;
+//      fscanf(file, "%c ", &k);
+//      if (j == WIDTH)
+//      {
+//         j = 0;
+//         i++;
+//      }
+//   }
+//
+//}
 
-void colide(int state[][WIDTH])
+void colide(int **state)
 {
    int l, save, j;
    omp_set_num_threads(T);
@@ -192,7 +254,7 @@ void colide(int state[][WIDTH])
    {
       for (j = 0; j < WIDTH; j++)
       {
-         if (begin_state[i][j] == '1') 
+         if (beg_state[i][j] == '1')
          {    
             if (!(((state[i][j] & bitUP) && (state[i][j] & bitDOWN))))
             {
@@ -229,19 +291,19 @@ void colide(int state[][WIDTH])
 
          if (count_s[l] != 1)
          {
-            if (begin_state[i][j] == '0')
+            if (beg_state[i][j] == '0')
             {
                save = prob(P_0_1, l);
                state[i][j] = S[l][save];
             }
             else
-               if (begin_state[i][j] == '2')
+               if (beg_state[i][j] == '2')
                {
                   save = prob(P_0_5, l);
                   state[i][j] = S[l][save];
                }
                else
-                  if (begin_state[i][j] =='3')
+                  if (beg_state[i][j] =='3')
                   {
                      save = prob(P_0_9, l);
                      state[i][j] = S[l][save];
@@ -251,7 +313,7 @@ void colide(int state[][WIDTH])
    }
 }
 
-void move(int state[][WIDTH], int state_next_s[][WIDTH]) 
+void move(int **state, int **state_next_s) 
 {
    int j;
    omp_set_num_threads(T);
@@ -275,52 +337,80 @@ void move(int state[][WIDTH], int state_next_s[][WIDTH])
       }
 }
 
-void iteration(int state[][WIDTH], int state_next_s[][WIDTH])
+void iteration(int **state, int **state_next_s)
 {
    colide(state);             //столкновение частиц
    move(state, state_next_s); //движение частиц
 }
 
+template <typename Type>
+void INIT(Type ***ss)
+{
+   Type **state_s = *ss;
+   Type k;
+   f >> h >> w;
+
+   state_s = new Type* [h];
+   for (int i = 0; i < h; i++)
+      state_s[i] = new Type[w];
+
+   int i = 0, j = 0;
+   f >> k;
+   while (k != EOF && i != HEIGHT)
+   {
+      state_s[i][j++] = k;
+      f >> k;
+      //fscanf(file, "%lf", &k);
+      if (j == WIDTH)
+      {
+         j = 0;
+         i++;
+      }
+   }
+   *ss = state_s;
+}
+
+
 void begin()
 {
-   fopen_s(&file, "Geometry.txt", "r"); //геометрия области, 0-частица, 1- зеркало, 2 - другая среда
-   INIT(begin_state);       //чтение из файла геометрии
-   fclose(file);
+   f.open("Geometry.txt", ios_base::in);
+   //fopen_s(&file, "Geometry.txt", "r"); //геометрия области, 0-частица, 1- зеркало, 2 - другая среда
+   INIT(&beg_state);       //чтение из файла геометрии
+   f.close();
 
-   fopen_s(&file, "Density.txt", "r");  // начальное состояние области
-   INIT(fl);                      //чтение из файла геометрии
-   fclose(file);
+   f.open("Density.txt", ios_base::in);
+   //fopen_s(&file, "Density.txt", "r");  // начальное состояние области
+   INIT(&den_state);                      //чтение из файла геометрии
+   f.close();
 
 }
 
 void Rule(int count[Size], double P_0_1[PS_Hight][PS_Width], double P_0_5[PS_Hight][PS_Width], double P_0_9[PS_Hight][PS_Width], int S[PS_Hight][PS_Width]) 
 {
-   fopen_s(&file, "Rule3.txt", "r"); //массив с колличеством исходов их частицы при столконовении
-   INIT_Count(count);                //чтение из файла массива
-   fclose(file);
+   f.open("Rule3.txt", ios_base::in);           //массив с колличеством исходов их частицы при столконовении
+   INIT_Count(count);                           //чтение из файла массива
+   f.close();
 
-   fopen_s(&file, "matrixes0.1.txt", "r"); //инициализация првила. вероятность 0.1
-   INIT_RULE_S(count, P_0_1);                //чтение из файла вероятности
-   fclose(file);
+   f.open("matrixes0.1.txt", ios_base::in);     //инициализация првила. вероятность 0.1
+   INIT_RULE_S(count, P_0_1);                   //чтение из файла вероятности
+   f.close();
 
-   fopen_s(&file, "matrixes0.5.txt", "r"); //инициализация првила. вероятность 0.5
-   INIT_RULE_S(count, P_0_5);                //чтение из файла вероятности
-   fclose(file);
+   f.open("matrixes0.5.txt", ios_base::in);     //инициализация првила. вероятность 0.5
+   INIT_RULE_S(count, P_0_5);                   //чтение из файла вероятности
+   f.close();
 
-   fopen_s(&file, "matrixes0.9.txt", "r"); //инициализация првила. вероятность 0.9
-   INIT_RULE_S(count, P_0_9);                //чтение из файла вероятности
-   fclose(file);
+   f.open("matrixes0.9.txt", ios_base::in);     //инициализация првила. вероятность 0.9
+   INIT_RULE_S(count, P_0_9);                   //чтение из файла вероятности
+   f.close();
 
-   fopen_s(&file, "Rule2.txt", "r");       //состояни для правил
-   INIT_RULE_S(count, S);                          //чтение из файла состояний
-   fclose(file);
+   f.open("Rule2.txt", ios_base::in);           //состояни для правил      
+   INIT_RULE_S(count, S);                       //чтение из файла состояний
+   f.close();
 
 }
 
 int main()
 {
-   Bmp img(WIDTH, HEIGHT);
-
    begin(); //инициализация начальных состояний
 
    FILL(); // заполнение частицами массива начальными состояниями
@@ -333,7 +423,7 @@ int main()
       auto start = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < Count; i++)
       {
-         iteration(state_3[i], state_next_s[i]);  //итерация : сдвиг, столкновение
+         iteration(state_31[i], state_n_3[i]);  //итерация : сдвиг, столкновение
       }
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> diff = end - start;
@@ -343,7 +433,7 @@ int main()
       {
          auto start1 = std::chrono::high_resolution_clock::now();
 
-     //    picture(state_3, img, j);  //предача данных для отрисовки картинок
+     //    picture(state_31, j);  //предача данных для отрисовки картинок
 
          auto end1 = std::chrono::high_resolution_clock::now();
          std::chrono::duration<double> diff1 = end1 - start1;

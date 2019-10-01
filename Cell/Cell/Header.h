@@ -13,7 +13,7 @@ int const WIDTH = 1000, HEIGHT = 500; //размер клеточного поля
 #define Iter 1000                     // колличество итераций
 #define T 4                           // количество потоков
 
-int picture(int [][HEIGHT][WIDTH], Bmp &, int);
+int picture(int [][HEIGHT][WIDTH], int);
 void plot();
 
 #define bitUP  1
