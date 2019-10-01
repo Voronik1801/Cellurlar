@@ -1,6 +1,0 @@
-﻿  main.cpp
-c1xx : warning C4199: двухэтапный поиск имен не поддерживается для C++/CLI, C++/CX или OpenMP. Используйте /Zc:twoPhase-
-  picture.cpp
-c1xx : warning C4199: двухэтапный поиск имен не поддерживается для C++/CLI, C++/CX или OpenMP. Используйте /Zc:twoPhase-
-  Создание кода...
-  CA3.vcxproj -> C:\Users\SergeyP\source\repos\CA3\Debug\CA3.exe

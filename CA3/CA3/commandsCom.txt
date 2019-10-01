@@ -1,7 +1,0 @@
-set output 'diagram_Com.png'
-set terminal png size 1280, 600
-set xlabel "Iterations"
-set ylabel "Difference"
-set title "Compair speed left and right waves"
-set grid
-plot [0:300][-0.5:2] 'Diagram.txt' u 1:2 w lines title "LEFT", 'Diagram.txt' u 1:3 w lines title "RIGHT" 
