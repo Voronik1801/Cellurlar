@@ -9,11 +9,11 @@ int const WIDTH = 1000, HEIGHT = 500; //размер клеточного поля
 
 #define rad 2                         // осреднение по окрестности
 #define linerad 5                     // осреднение по столбцу
-#define Count 12                      // колличество копий
-#define Iter 1000                     // колличество итераций
+#define Count 8                      // колличество копий
+#define Iter 200                     // колличество итераций
 #define T 4                           // количество потоков
 
-int picture(int [][HEIGHT][WIDTH], int);
+int picture(int ***, int);
 void plot();
 
 #define bitUP  1

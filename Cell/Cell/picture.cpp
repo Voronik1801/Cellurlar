@@ -5,24 +5,29 @@
 #include <fstream>
 using namespace std;
 
-int m[HEIGHT][WIDTH];          // движ. частицы
-int r[HEIGHT][WIDTH];          // ч. покоя
-double dens_M[HEIGHT][WIDTH];  // сред. масса движ. частиц
-double dens_R[HEIGHT][WIDTH];  // сред. масса ч. покоя
-double columns[WIDTH];         // сред. значение по столбцу
-char begin_state[HEIGHT][WIDTH];
+//int m[HEIGHT][WIDTH];          // движ. частицы
+//int r[HEIGHT][WIDTH];          // ч. покоя
+int** m1;
+int** r1;
+double** dens_M1;
+double** dens_R1;
+//double dens_M[HEIGHT][WIDTH];  // сред. масса движ. частиц
+//double dens_R[HEIGHT][WIDTH];  // сред. масса ч. покоя
+double* columns;
+//double columns[WIDTH];         // сред. значение по столбцу
+//char begin_state[HEIGHT][WIDTH];
 extern char** beg_state;
 double diagram[2][(int)(Iter/10.0) + 1];
 double diag[(int)(Iter / 10.0) + 1];
 extern int h, w;
-Bmp image(WIDTH, HEIGHT);
+//Bmp image(WIDTH, HEIGHT);
 
 double NumRound(double d) // округление до десятых
 {
    return (((d * 10.0 - floor(d * 10.0)) >= 0.5) ? ceil(d * 10.0) : floor(d * 10.0)) / 10.0;
 }
 
-void waveSpeed(double a[WIDTH], int iter)
+void waveSpeed(double *a, int iter)
 {
    double min = 11, max = 0, aver;
    int j = 0, s[2] = {}, e[2] = {}, k = 0; //start, end of wave
@@ -33,7 +38,7 @@ void waveSpeed(double a[WIDTH], int iter)
    else
       out.open("diagram4.txt", std::ofstream::app);
 
-   for (int i = linerad; i < WIDTH - linerad; i++) 
+   for (int i = linerad; i < w - linerad; i++) 
    {
       if (a[i] > max)
          max = a[i];
@@ -41,14 +46,14 @@ void waveSpeed(double a[WIDTH], int iter)
          min = a[i];
    }
    aver = (max + min) / 2.0;
-   while (j < WIDTH) // нахождение точек пересечения волны и средней линии
+   while (j < w) // нахождение точек пересечения волны и средней линии
    {
-      while (a[j] - 0.05 < aver && j < WIDTH)
+      while (a[j] - 0.05 < aver && j < w)
          j++;
-      s[k] = j == WIDTH ? 0 : j;
-      while (a[j] + 0.05 > aver && j < WIDTH)
+      s[k] = j == w ? 0 : j;
+      while (a[j] + 0.05 > aver && j < w)
          j++;
-      e[k] = j == WIDTH ? 0 : j;
+      e[k] = j == w ? 0 : j;
       k++;
       if (k == 2)
          break;
@@ -95,47 +100,47 @@ void waveSpeed(double a[WIDTH], int iter)
    out.close();
 }
 
-void sum(double c[][WIDTH], int a[][WIDTH])
+void sum(double **c, int **a)
 {
    int q;
    omp_set_num_threads(T);
 #pragma omp parallel for private (q)
-   for (int m = 0; m < HEIGHT; m++)
-      for (q = 0; q < WIDTH; q++)
+   for (int m = 0; m < h; m++)
+      for (q = 0; q < w; q++)
          c[m][q] += a[m][q];
 }
 
-void columnAver(double a[][WIDTH], double b[][WIDTH], double c[WIDTH], int iter) // а - массив масс (движ + покой)
+void columnAver(double **a, double **b, double *c, int iter) // а - массив масс (движ + покой)
 {
    ofstream out;
    string avercol = "avercol" + to_string(iter) + ".txt";
    out.open(avercol);
    int t;
-   for (int i = 0; i < WIDTH; i++)
+   for (int i = 0; i < w; i++)
    {
-      if (i - linerad < 0 || i + linerad >= WIDTH)
+      if (i - linerad < 0 || i + linerad >= w)
          continue;
-      for (int j = 0; j < HEIGHT; j++)  
+      for (int j = 0; j < h; j++)  
          for (t = i - linerad; t <= i + linerad; t++)
                c[i] += a[j][t] + b[j][t];    
-      c[i] /= (HEIGHT * (2 * linerad + 1));
+      c[i] /= (h * (2 * linerad + 1));
       out << i << " " << c[i] << endl;
    }
    out.close();
 }
 
-void rounding(double c[][WIDTH], double a[][WIDTH])
+void rounding(double **c, double **a)
 {
    double s;
    int q, i, j;
    omp_set_num_threads(T);
 #pragma omp parallel for private (s, q, i, j)
-   for (int m = 0; m < HEIGHT; m++)
+   for (int m = 0; m < h; m++)
    {
       s = 0;
-      for (q = 0; q < WIDTH; q++)
+      for (q = 0; q < w; q++)
       {
-         if (m - rad < 0 || q - rad < 0 || m + rad > HEIGHT - 1 || q + rad > WIDTH - 1)
+         if (m - rad < 0 || q - rad < 0 || m + rad > h - 1 || q + rad > w - 1)
             continue;
          else
             for (i = m - rad; i <= m + rad; i++)
@@ -148,17 +153,17 @@ void rounding(double c[][WIDTH], double a[][WIDTH])
    }
 }
 
-void separate(int a[][WIDTH], int m[][WIDTH], int r[][WIDTH])
+void separate(int **a, int **m, int **r)
 {
    int k = 0, t = 0, n, q, i;
    omp_set_num_threads(T);
 #pragma omp parallel for private (k, t, n, q, i)
-   for (int w = 0; w < HEIGHT; w++)
+   for (int z = 0; z < h; z++)
    {
       k = t = 0;
-      for (q = 0; q < WIDTH; q++)
+      for (q = 0; q < w; q++)
       {
-         n = a[w][q];
+         n = a[z][q];
          for (i = 0; i < 4; i++)
          {
             k += n & 1;
@@ -169,8 +174,8 @@ void separate(int a[][WIDTH], int m[][WIDTH], int r[][WIDTH])
             t += (1 << i) * (n & 1);
             n = n >> 1;
          }
-         m[w][q] = k;
-         r[w][q] = 2 * t;
+         m[z][q] = k;
+         r[z][q] = 2 * t;
          t = k = 0;
       }
    }
@@ -192,42 +197,72 @@ int gett(int n)
    return k + 2 * t;
 }
 
-int picture(int a[][HEIGHT][WIDTH], int iter)
+template <typename Type>
+void alloc(Type*** body)
 {
-   double aver_m[HEIGHT][WIDTH] = {}; 
-   double aver_r[HEIGHT][WIDTH] = {};
+   if (!(*body))
+   {
+      Type **s;
+      s = new Type* [h] {0};
+      for (int i = 0; i < h; i++)     
+         s[i] = new Type[w] {0};  
+      *body = s;
+   }
+   else
+   {
+      Type** s = *body;
+      for (int i = 0; i < h; i++)
+         for (int j = 0; j < w; j++)
+            s[i][j] = 0;             // оптимизировать!!
+         //memset(s[i], 0, w);  
+      *body = s;
+   }
+}
+
+int picture(int ***a, int iter)
+{
+   static double **aver_m, **aver_r;
+   alloc(&aver_m);
+   alloc(&aver_r);
+   alloc(&m1);
+   alloc(&r1);
 
    for (int i = 0; i < Count; i++)
    {
-      separate(a[i], m, r); // разделение на движущиеся и покоя
-      sum(aver_m, m);       // суммирование
-      sum(aver_r, r); 
+      separate(a[i], m1, r1); // разделение на движущиеся и покоя
+      sum(aver_m, m1);       // суммирование
+      sum(aver_r, r1); 
    }
    
    omp_set_num_threads(T);
 #pragma omp parallel for
-   for (int i = 0; i < HEIGHT; i++)  // ансамблирование
-      for (int j = 0; j < WIDTH; j++)
+   for (int i = 0; i < h; i++)  // ансамблирование
+      for (int j = 0; j < w; j++)
       {
          aver_m[i][j] = aver_m[i][j] / Count; 
          aver_r[i][j] = aver_r[i][j] / Count;
       }
 
-   memset(dens_R, 0, sizeof(double) * HEIGHT * WIDTH);
-   memset(dens_M, 0, sizeof(double) * HEIGHT * WIDTH);
-   memset(columns, 0, sizeof(double) * WIDTH);
+   alloc(&dens_M1);
+   alloc(&dens_R1);
+
+   if (columns)
+      memset(columns, 0, sizeof(double) * w);
+   else
+      columns = new double[w] {0};
 
    columnAver(aver_m, aver_r, columns, iter); //осреднение по столбцам
    waveSpeed(columns, iter); // скорость волны
-   rounding(dens_M, aver_m); // осреднение по окрестности
-   rounding(dens_R, aver_r);
+   rounding(dens_M1, aver_m); // осреднение по окрестности
+   rounding(dens_R1, aver_r);
 
-   for (int i = 0; i < HEIGHT; i++)
-      for (int j = 0; j < WIDTH; j++) 
-         if (begin_state[i][j] == '1')
+   static Bmp image(w, h);
+   for (int i = 0; i < h; i++)
+      for (int j = 0; j < w; j++) 
+         if (beg_state[i][j] == '1')
             image.setPixel(j, i, 255, 60, 60); // нарисовать зеркало
          else 
-            image.setPixel(j, i, 0, (int)(255.0 / 10.0 * (dens_M[i][j] + dens_R[i][j])), (int)(255.0 / 10.0 * dens_R[i][j])); // draw picture
+            image.setPixel(j, i, 0, (int)(255.0 / 10.0 * (dens_M1[i][j] + dens_R1[i][j])), (int)(255.0 / 10.0 * dens_R1[i][j])); // draw picture
 
    string errMsg;
    string fileName = "pictFromIter" + to_string( iter ) + ".bmp";

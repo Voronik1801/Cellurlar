@@ -433,7 +433,7 @@ int main()
       {
          auto start1 = std::chrono::high_resolution_clock::now();
 
-     //    picture(state_31, j);  //предача данных для отрисовки картинок
+         picture(state_31, j);  //предача данных для отрисовки картинок
 
          auto end1 = std::chrono::high_resolution_clock::now();
          std::chrono::duration<double> diff1 = end1 - start1;
